@@ -3,8 +3,8 @@ package internal
 import (
 	"fmt"
 	v1 "github.com/Big-Kotik/transparent-data-bridge-api/bridge/api/v1"
+	"github.com/rs/zerolog/log"
 	"io"
-	"log"
 	"sync"
 )
 
@@ -38,6 +38,7 @@ func (r *RelayServer) RegisterServer(auth *v1.Auth, server v1.TransparentDataRel
 			r.deregisterServer(auth.Id)
 			return err
 		}
+		log.Debug().Msgf("chunk sended %s to server %d", req.GetFileName(), req.GetDestination())
 	}
 
 	return nil
@@ -49,8 +50,10 @@ func (r *RelayServer) ReceiveChunks(request *v1.SendFileRequest, server v1.Trans
 	r.m.RUnlock()
 
 	if !ok {
-		return fmt.Errorf("can't find file by his name")
+		return fmt.Errorf("can't find file by it's name")
 	}
+
+	log.Info().Msgf("start download file %s", request.FileName)
 
 	for chunk := range ch {
 		err := server.Send(chunk)
@@ -132,8 +135,13 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 		return fmt.Errorf("first request must be SendFileRequest")
 	}
 
+	log.Info().Msgf("register new reuqest %s to %d", fi.GetFileName(), fi.GetDestination())
+
 	ch, err := r.registerRequest(fi)
-	defer r.deregisterRequest(fi.FileName)
+	defer func() {
+		r.deregisterRequest(fi.FileName)
+		log.Info().Msgf("deregister new request %s to %d", fi.GetFileName(), fi.GetDestination())
+	}()
 
 	for {
 		file, err := server.Recv()
@@ -142,8 +150,6 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 		} else if err != nil {
 			return err
 		}
-
-		log.Println(file.String())
 
 		chunk := file.GetChunk()
 		if chunk == nil {

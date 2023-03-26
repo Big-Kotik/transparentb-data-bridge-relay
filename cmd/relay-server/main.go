@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/Big-Kotik/transparent-data-bridge-api/bridge/api/v1"
 	"github.com/Big-Kotik/transparentb-data-bridge-relay/internal"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -16,11 +17,13 @@ var port = flag.Int64("port", 10000, "port for server")
 
 func main() {
 
+	zerolog.SetGlobalLevel(zerolog.TraceLevel)
+
 	flag.Parse()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", *port))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("can't start server")
 	}
 
 	relay := internal.NewRelayServer()

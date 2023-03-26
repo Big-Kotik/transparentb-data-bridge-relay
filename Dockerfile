@@ -6,4 +6,4 @@ RUN go mod download
 RUN go mod tidy
 RUN go build -o relay cmd/relay-server/main.go
 
-CMD ./relay
+ENTRYPOINT ["./relay"]
