@@ -28,11 +28,15 @@ func NewRelayServer() *RelayServer {
 
 func (r *RelayServer) RegisterServer(auth *v1.Auth, server v1.TransparentDataRelayService_RegisterServerServer) error {
 	ch, err := r.registerServer(auth.Id)
+
+	log.Info().Msgf("new server registered %d", auth.Id)
+
 	if err != nil {
 		return err
 	}
 
 	for req := range ch {
+		log.Debug().Msgf("get request %s to server %d", req.GetFileName(), req.GetDestination())
 		err := server.Send(req)
 		if err != nil {
 			r.deregisterServer(auth.Id)
@@ -101,7 +105,9 @@ func (r *RelayServer) registerRequest(req *v1.SendFileRequest) (chan<- *v1.FileC
 		return nil, fmt.Errorf("can't find server with id: %d", req.Destination)
 	}
 
+	log.Debug().Msg("sending to chan")
 	server <- req
+	log.Debug().Msg("sent to chan")
 
 	if _, ok := r.requests[req.FileName]; ok {
 		return nil, fmt.Errorf("%s already sending file", req.FileName)

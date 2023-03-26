@@ -33,6 +33,7 @@ func main() {
 	v1.RegisterTransparentDataRelayServiceServer(srv, relay)
 
 	go srv.Serve(lis)
+	log.Info().Msg("start service")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals)
