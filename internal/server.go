@@ -4,6 +4,7 @@ import (
 	"fmt"
 	v1 "github.com/Big-Kotik/transparent-data-bridge-api/bridge/api/v1"
 	"io"
+	"log"
 	"sync"
 )
 
@@ -141,6 +142,8 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 		} else if err != nil {
 			return err
 		}
+
+		log.Println(file.String())
 
 		chunk := file.GetChunk()
 		if chunk != nil {
