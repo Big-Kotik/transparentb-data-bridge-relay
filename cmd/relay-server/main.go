@@ -39,7 +39,9 @@ func main() {
 	signal.Notify(signals)
 
 	<-signals
+	log.Info().Msg("stopping server")
 
-	srv.GracefulStop()
 	relay.Stop()
+	srv.Stop()
+
 }
