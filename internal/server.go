@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"io"
 	"sync"
-	"time"
 )
 
 type RelayServer struct {
@@ -59,6 +58,10 @@ func (r *RelayServer) ReceiveChunks(request *v1.SendFileRequest, server v1.Trans
 	}
 
 	log.Info().Msgf("start download file %s", request.FileName)
+	defer func() {
+		r.deregisterRequest(request.FileName)
+		log.Info().Msgf("deregister new request %s to %d", fi.GetFileName(), fi.GetDestination())
+	}()
 
 	for chunk := range ch {
 		err := server.Send(chunk)
@@ -85,7 +88,6 @@ func (r *RelayServer) registerServer(id int32) (<-chan *v1.SendFileRequest, erro
 }
 
 func (r *RelayServer) deregisterServer(id int32) {
-	time.Sleep(1 * time.Second)
 	r.m.Lock()
 	defer r.m.Unlock()
 
@@ -150,10 +152,6 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 	log.Info().Msgf("register new reuqest %s to %d", fi.GetFileName(), fi.GetDestination())
 
 	ch, err := r.registerRequest(fi)
-	defer func() {
-		r.deregisterRequest(fi.FileName)
-		log.Info().Msgf("deregister new request %s to %d", fi.GetFileName(), fi.GetDestination())
-	}()
 
 	for {
 		file, err := server.Recv()
