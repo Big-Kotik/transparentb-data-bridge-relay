@@ -60,7 +60,7 @@ func (r *RelayServer) ReceiveChunks(request *v1.SendFileRequest, server v1.Trans
 	log.Info().Msgf("start download file %s", request.FileName)
 	defer func() {
 		r.deregisterRequest(request.FileName)
-		log.Info().Msgf("deregister new request %s to %d", fi.GetFileName(), fi.GetDestination())
+		log.Info().Msgf("deregister new request %s to %d", request.GetFileName(), request.GetDestination())
 	}()
 
 	for chunk := range ch {
