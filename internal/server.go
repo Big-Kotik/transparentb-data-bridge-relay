@@ -13,7 +13,7 @@ type RelayServer struct {
 	v1.UnimplementedTransparentDataBridgeServiceServer
 
 	m       sync.RWMutex
-	servers map[int32]chan<- *v1.SendFileRequest
+	servers map[int32]chan *v1.SendFileRequest
 	// We are using here FileName because it's uuid
 	// TODO: delete from map
 	requests map[string]chan *v1.FileChunk
@@ -21,7 +21,7 @@ type RelayServer struct {
 
 func NewRelayServer() *RelayServer {
 	return &RelayServer{
-		servers:  make(map[int32]chan<- *v1.SendFileRequest),
+		servers:  make(map[int32]chan *v1.SendFileRequest),
 		requests: make(map[string]chan *v1.FileChunk),
 	}
 }
@@ -88,7 +88,9 @@ func (r *RelayServer) deregisterServer(id int32) {
 	defer r.m.Unlock()
 
 	if ch, ok := r.servers[id]; ok {
-		close(ch)
+		if _, open := <-ch; open {
+			close(ch)
+		}
 	}
 
 	delete(r.servers, id)
@@ -122,7 +124,9 @@ func (r *RelayServer) deregisterRequest(id string) {
 	defer r.m.Unlock()
 
 	if ch, ok := r.requests[id]; ok {
-		close(ch)
+		if _, open := <-ch; open {
+			close(ch)
+		}
 	}
 
 	delete(r.requests, id)
@@ -177,12 +181,16 @@ func (r *RelayServer) Stop() {
 	defer r.m.Unlock()
 
 	for k, v := range r.servers {
-		close(v)
+		if _, open := <-v; open {
+			close(v)
+		}
 		delete(r.servers, k)
 	}
 
 	for k, v := range r.requests {
-		close(v)
+		if _, open := <-v; open {
+			close(v)
+		}
 		delete(r.requests, k)
 	}
 }
