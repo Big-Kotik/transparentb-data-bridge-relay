@@ -182,7 +182,9 @@ func (r *RelayServer) Stop() {
 	defer r.m.Unlock()
 
 	for k, v := range r.servers {
-		if _, open := <-v; open {
+		_, open := <-v
+		log.Info().Msgf("%b", open)
+		if open {
 			log.Info().Msgf("close %d", k)
 			close(v)
 		}
