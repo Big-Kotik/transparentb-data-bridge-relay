@@ -177,12 +177,13 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 }
 
 func (r *RelayServer) Stop() {
-	log.Info().Msg("closing relay server")
+	log.Info().Msg("stopping relay server")
 	r.m.Lock()
 	defer r.m.Unlock()
 
 	for k, v := range r.servers {
 		if _, open := <-v; open {
+			log.Info().Msgf("close %d", k)
 			close(v)
 		}
 		delete(r.servers, k)
@@ -194,4 +195,5 @@ func (r *RelayServer) Stop() {
 		}
 		delete(r.requests, k)
 	}
+	log.Info().Msg("relay server stopped")
 }
