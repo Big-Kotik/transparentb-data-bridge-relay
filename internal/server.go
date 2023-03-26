@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"io"
 	"sync"
+	"time"
 )
 
 type RelayServer struct {
@@ -70,7 +71,7 @@ func (r *RelayServer) ReceiveChunks(request *v1.SendFileRequest, server v1.Trans
 }
 
 func (r *RelayServer) registerServer(id int32) (<-chan *v1.SendFileRequest, error) {
-	ch := make(chan *v1.SendFileRequest)
+	ch := make(chan *v1.SendFileRequest, 1000)
 
 	r.m.Lock()
 	defer r.m.Unlock()
@@ -84,6 +85,7 @@ func (r *RelayServer) registerServer(id int32) (<-chan *v1.SendFileRequest, erro
 }
 
 func (r *RelayServer) deregisterServer(id int32) {
+	time.Sleep(1 * time.Second)
 	r.m.Lock()
 	defer r.m.Unlock()
 
@@ -97,7 +99,7 @@ func (r *RelayServer) deregisterServer(id int32) {
 }
 
 func (r *RelayServer) registerRequest(req *v1.SendFileRequest) (chan<- *v1.FileChunk, error) {
-	ch := make(chan *v1.FileChunk)
+	ch := make(chan *v1.FileChunk, 1000)
 
 	r.m.Lock()
 	defer r.m.Unlock()
