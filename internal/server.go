@@ -127,12 +127,6 @@ func (r *RelayServer) deregisterRequest(id string) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if ch, ok := r.requests[id]; ok {
-		if _, open := <-ch; open {
-			close(ch)
-		}
-	}
-
 	delete(r.requests, id)
 }
 
@@ -168,6 +162,8 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 
 		ch <- chunk
 	}
+
+	close(ch)
 
 	if err := server.SendAndClose(&v1.FileStatus{LastChunkOffset: 0}); err != nil {
 		return err
