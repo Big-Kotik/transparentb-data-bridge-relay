@@ -183,19 +183,13 @@ func (r *RelayServer) Stop() {
 	log.Info().Msg("locked relay server")
 
 	for k, v := range r.servers {
-		_, open := <-v
-		log.Info().Msgf("%b", open)
-		if open {
-			log.Info().Msgf("close %d", k)
-			close(v)
-		}
+		log.Info().Msgf("close %d", k)
+		close(v)
 		delete(r.servers, k)
 	}
 
 	for k, v := range r.requests {
-		if _, open := <-v; open {
-			close(v)
-		}
+		close(v)
 		delete(r.requests, k)
 	}
 	log.Info().Msg("relay server stopped")
