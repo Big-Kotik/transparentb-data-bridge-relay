@@ -180,6 +180,7 @@ func (r *RelayServer) Stop() {
 	log.Info().Msg("stopping relay server")
 	r.m.Lock()
 	defer r.m.Unlock()
+	log.Info().Msg("locked relay server")
 
 	for k, v := range r.servers {
 		_, open := <-v
