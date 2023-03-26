@@ -70,7 +70,7 @@ func (r *RelayServer) ReceiveChunks(request *v1.SendFileRequest, server v1.Trans
 }
 
 func (r *RelayServer) registerServer(id int32) (<-chan *v1.SendFileRequest, error) {
-	ch := make(chan *v1.SendFileRequest, 10)
+	ch := make(chan *v1.SendFileRequest)
 
 	r.m.Lock()
 	defer r.m.Unlock()
@@ -97,7 +97,7 @@ func (r *RelayServer) deregisterServer(id int32) {
 }
 
 func (r *RelayServer) registerRequest(req *v1.SendFileRequest) (chan<- *v1.FileChunk, error) {
-	ch := make(chan *v1.FileChunk, 10)
+	ch := make(chan *v1.FileChunk)
 
 	r.m.Lock()
 	defer r.m.Unlock()
