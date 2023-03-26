@@ -41,4 +41,5 @@ func main() {
 	<-signals
 
 	srv.GracefulStop()
+	relay.Stop()
 }

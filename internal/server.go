@@ -171,3 +171,18 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 
 	return nil
 }
+
+func (r *RelayServer) Stop() {
+	r.m.Lock()
+	defer r.m.Unlock()
+
+	for k, v := range r.servers {
+		close(v)
+		delete(r.servers, k)
+	}
+
+	for k, v := range r.requests {
+		close(v)
+		delete(r.requests, k)
+	}
+}
