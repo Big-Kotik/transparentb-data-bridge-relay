@@ -146,7 +146,7 @@ func (r *RelayServer) SendChunks(server v1.TransparentDataBridgeService_SendChun
 		log.Println(file.String())
 
 		chunk := file.GetChunk()
-		if chunk != nil {
+		if chunk == nil {
 			return fmt.Errorf("expected chunk")
 		}
 
